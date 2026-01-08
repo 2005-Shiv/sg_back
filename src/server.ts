@@ -1,25 +1,16 @@
 import express from 'express';
 import cors from 'cors';
-import { authMiddleware } from './middleware/auth';
 import { env } from './config/env';
+import authRoutes from './routes/auth.routes';
+import memoryRoutes from './routes/memory.routes';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/memory', memoryRoutes);
 
-app.get('/health', (_req, res) => {
-    res.json({ status: 'OK' });
-});
-
-app.get('/protected', authMiddleware, (req, res) => {
-    const user = (req as any).user;
-    res.json({
-        message: 'You are authenticated',
-        user_id: user.id,
-        email: user.email
-    });
-});
+app.use('/auth', authRoutes);
 
 const PORT = env.port;
 app.listen(PORT, () => {

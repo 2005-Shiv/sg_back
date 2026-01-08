@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabase } from '../config/supabase';
+import { toAuthUser } from '../types';
 
 export async function authMiddleware(
   req: Request,
@@ -25,8 +26,7 @@ export async function authMiddleware(
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    // attach user safely
-    (req as any).user = data.user;
+    req.user = toAuthUser(data.user);
 
     next();
   } catch (err) {
