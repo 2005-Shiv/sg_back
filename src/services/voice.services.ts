@@ -1,4 +1,5 @@
 import fs from "fs";
+import { assemblyAi } from "../config/ai";
 
 /* ---------- AUDIO PIPELINE ---------- */
 export const processAudioVoice = async (
@@ -6,11 +7,15 @@ export const processAudioVoice = async (
     userId: string
 ): Promise<string> => {
 
-    const transcript = await mockSpeechToText(file.path);
+    try {
+        const transcript = await transcribeWithAssemblyAI(file.path);
 
-    fs.unlink(file.path, () => {}); // cleanup
+        return transcript;
 
-    return transcript;
+    } finally {
+        // ALWAYS cleanup (even on error)
+        fs.unlink(file.path, () => {});
+    }
 };
 
 /* ---------- TEXT PIPELINE (TEMP) ---------- */
@@ -21,8 +26,33 @@ export const processTextVoice = async (
     return text.trim();
 };
 
-/* ---------- MOCK STT ---------- */
-const mockSpeechToText = async (_path: string): Promise<string> => {
-    await new Promise(res => setTimeout(res, 200));
-    return "mocked voice transcript";
+/* ---------- ASSEMBLY AI ---------- */
+const transcribeWithAssemblyAI = async (filePath: string): Promise<string> => {
+    // 1️⃣ Upload audio (returns STRING URL in your SDK)
+    const audioUrl: string = await assemblyAi.files.upload(
+        fs.createReadStream(filePath)
+    );
+
+    // 2️⃣ Create transcription job
+    const transcriptResponse = await assemblyAi.transcripts.create({
+        audio_url: audioUrl
+    });
+
+    const transcriptId = transcriptResponse.id;
+
+    // 3️⃣ Poll until completed
+    while (true) {
+        const result = await assemblyAi.transcripts.get(transcriptId);
+
+        if (result.status === "completed") {
+            return result.text ?? "";
+        }
+
+        if (result.status === "error") {
+            throw new Error(result.error || "AssemblyAI transcription failed");
+        }
+
+        await new Promise(res => setTimeout(res, 1500));
+    }
 };
+
