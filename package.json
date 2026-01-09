@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/genai": "^1.35.0",
     "@supabase/supabase-js": "^2.89.0",
     "assemblyai": "^4.22.1",
     "cors": "^2.8.5",

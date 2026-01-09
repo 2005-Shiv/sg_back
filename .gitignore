@@ -1,0 +1,19 @@
+# Dependency directories
+node_modules/
+
+# Environment variables
+.env
+.env.test
+
+# Build outputs (Standard TS/Node)
+dist/
+build/
+out/
+*.tsbuildinfo
+
+*.js
+
+# Large media files for testing
+*.mp3
+*.wav
+*.m4a

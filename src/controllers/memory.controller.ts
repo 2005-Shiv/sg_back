@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createMemory, getUserMemories } from '../services/memory.services';
+import { createMemory, getMemories } from '../services/memory.services';
 
 /**
  * POST /memory
@@ -17,7 +17,7 @@ export async function addMemory(req: Request, res: Response) {
       return res.status(400).json({ error: 'Content is required' });
     }
 
-    const memory = await createMemory(req.user.id, content);
+    const memory = await createMemory(req.user.id, content, "text");
 
     return res.status(201).json({ memory });
   } catch (err) {
@@ -35,7 +35,7 @@ export async function listMemories(req: Request, res: Response) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const memories = await getUserMemories(req.user.id);
+    const memories = await getMemories(req.user.id);
 
     return res.status(200).json({ memories });
   } catch (err) {
